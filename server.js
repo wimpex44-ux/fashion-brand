@@ -46,6 +46,7 @@ const uploadDir = path.join(rootDir, 'uploads');
 const stripe = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== 'sk_test_placeholder'
   ? Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
+const mockCheckoutSessions = new Map();
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 const upload = multer({
   dest: uploadDir,
@@ -154,13 +155,16 @@ app.get('/api/bookings', async (req, res) => {
 async function createCheckoutSession({ lineItems, successUrl, cancelUrl, metadata, shippingAmount }) {
   if (!stripe) {
     const sessionId = createId('mock_session');
-    return {
+    const session = {
       id: sessionId,
       url: `${successUrl}&session_id=${encodeURIComponent(sessionId)}`,
       mock: true,
+      status: 'complete',
       shippingAmount,
-      metadata,
+      metadata: metadata || {},
     };
+    mockCheckoutSessions.set(sessionId, session);
+    return session;
   }
 
   return stripe.checkout.sessions.create({
@@ -182,7 +186,12 @@ async function verifyCheckoutSession(sessionId) {
   }
 
   if (!stripe) {
-    return { id: sessionId, status: sessionId.startsWith('mock_') ? 'complete' : 'pending' };
+    const session = mockCheckoutSessions.get(sessionId) || {
+      id: sessionId,
+      status: 'pending',
+      metadata: {},
+    };
+    return { ...session, metadata: session.metadata || {} };
   }
 
   const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -310,6 +319,9 @@ app.get('/api/patterns/download', publicFormLimiter, async (req, res) => {
     if (session.status !== 'complete') {
       return res.status(402).json({ ok: false, message: 'A completed payment is required before the download is released.' });
     }
+    if (!session.metadata || session.metadata.patternId !== selectedPatternId) {
+      return res.status(403).json({ ok: false, message: 'This payment session does not match the requested pattern.' });
+    }
   } catch (error) {
     return res.status(402).json({ ok: false, message: 'Payment confirmation could not be verified.' });
   }
@@ -407,19 +419,6 @@ app.post('/api/webhooks/stripe', async (req, res) => {
     if (orderId) {
       updateOrderStatus(orderId, 'Paid');
     }
-
-    if (patternId) {
-      const pattern = (await listPatterns()).find((item) => item.id === patternId);
-      if (pattern) {
-        const token = createId('download_token');
-        await createDownloadRecord({
-          patternId,
-          patternName: pattern.name,
-          token,
-          expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
-        });
-      }
-    }
   }
 
   return res.status(200).json({ ok: true });
@@ -438,6 +437,9 @@ app.get('/api/orders/confirm', publicFormLimiter, async (req, res) => {
     const session = await verifyCheckoutSession(sessionId);
     if (session.status !== 'complete') {
       return res.status(202).json({ ok: true, status: 'pending', message: 'Payment is still being confirmed.' });
+    }
+    if (!session.metadata || session.metadata.orderId !== selectedOrderId) {
+      return res.status(403).json({ ok: false, message: 'This payment session does not match the requested order.' });
     }
 
     const order = selectedOrderId ? getOrderById(selectedOrderId) : null;

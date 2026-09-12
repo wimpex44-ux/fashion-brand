@@ -95,3 +95,102 @@ test('admin uploads require CSRF protection for state-changing requests', async 
     child.kill('SIGTERM');
   }
 });
+
+test('pattern download rejects sessions for a different pattern', async () => {
+  const child = spawn(process.execPath, ['server.js'], {
+    cwd: path.join(__dirname, '..'),
+    env: { ...process.env, PORT: '4012', ADMIN_PASSWORD: 'TestPass123!' },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  const stdout = [];
+  const stderr = [];
+  child.stdout.on('data', (chunk) => stdout.push(chunk.toString()));
+  child.stderr.on('data', (chunk) => stderr.push(chunk.toString()));
+
+  async function waitForServer() {
+    const deadline = Date.now() + 15000;
+    while (Date.now() < deadline) {
+      try {
+        const response = await fetch('http://127.0.0.1:4012/api/health', { signal: AbortSignal.timeout(1000) });
+        if (response.ok) return;
+      } catch (error) {
+      }
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+    throw new Error(`server did not start in time. stdout=${stdout.join('')} stderr=${stderr.join('')}`);
+  }
+
+  try {
+    await waitForServer();
+    const patternsResponse = await fetch('http://127.0.0.1:4012/api/patterns');
+    const patternsData = await patternsResponse.json();
+    const pattern = patternsData.patterns[0];
+    assert.ok(pattern, 'seed patterns should exist for the mismatch test');
+
+    const purchaseResponse = await fetch('http://127.0.0.1:4012/api/patterns/purchase', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ patternId: pattern.id, patternName: pattern.name }),
+    });
+    const purchaseData = await purchaseResponse.json();
+    assert.equal(purchaseResponse.status, 201, `pattern purchase should succeed: ${JSON.stringify(purchaseData)}`);
+    assert.ok(purchaseData.sessionId, 'mock checkout session should be returned');
+
+    const mismatchResponse = await fetch(`http://127.0.0.1:4012/api/patterns/download?patternId=${encodeURIComponent('different-pattern')}&patternName=${encodeURIComponent('Different Pattern')}&session_id=${encodeURIComponent(purchaseData.sessionId)}`);
+    const mismatchData = await mismatchResponse.json();
+    assert.equal(mismatchResponse.status, 403, `mismatched pattern session should be rejected, got ${mismatchResponse.status}: ${JSON.stringify(mismatchData)}`);
+  } finally {
+    child.kill('SIGTERM');
+  }
+});
+
+test('order confirmation rejects sessions for a different order', async () => {
+  const child = spawn(process.execPath, ['server.js'], {
+    cwd: path.join(__dirname, '..'),
+    env: { ...process.env, PORT: '4013', ADMIN_PASSWORD: 'TestPass123!' },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  const stdout = [];
+  const stderr = [];
+  child.stdout.on('data', (chunk) => stdout.push(chunk.toString()));
+  child.stderr.on('data', (chunk) => stderr.push(chunk.toString()));
+
+  async function waitForServer() {
+    const deadline = Date.now() + 15000;
+    while (Date.now() < deadline) {
+      try {
+        const response = await fetch('http://127.0.0.1:4013/api/health', { signal: AbortSignal.timeout(1000) });
+        if (response.ok) return;
+      } catch (error) {
+      }
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+    throw new Error(`server did not start in time. stdout=${stdout.join('')} stderr=${stderr.join('')}`);
+  }
+
+  try {
+    await waitForServer();
+    const checkoutResponse = await fetch('http://127.0.0.1:4013/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer: { name: 'Test Buyer', email: 'buyer@example.com' },
+        items: [{ product: { name: 'The Atelier Blazer', price: 240 }, qty: 1 }],
+        total: 258,
+        shipping: 18,
+      }),
+    });
+    const checkoutData = await checkoutResponse.json();
+    assert.equal(checkoutResponse.status, 201, `checkout should succeed: ${JSON.stringify(checkoutData)}`);
+    const sessionId = checkoutData.order.checkoutSessionId;
+    assert.ok(sessionId, 'checkout should return a Stripe/mock session id');
+
+    const confirmResponse = await fetch(`http://127.0.0.1:4013/api/orders/confirm?session_id=${encodeURIComponent(sessionId)}&orderId=${encodeURIComponent('different-order')}`);
+    const confirmData = await confirmResponse.json();
+    assert.equal(confirmResponse.status, 403, `mismatched order session should be rejected, got ${confirmResponse.status}: ${JSON.stringify(confirmData)}`);
+  } finally {
+    child.kill('SIGTERM');
+  }
+});
