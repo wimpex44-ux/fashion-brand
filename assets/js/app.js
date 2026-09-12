@@ -621,23 +621,30 @@ async function renderConfirmation() {
   if (type === 'pattern') {
     const patternName = params.get('pattern') || 'Pattern';
     const sessionId = params.get('session_id');
+    const patternId = params.get('patternId') || patternName.toLowerCase().replace(/\s+/g, '-');
 
     let downloadLink = '/patterns.html';
-    try {
-      const response = await fetch(`/api/patterns/download?patternName=${encodeURIComponent(patternName)}&patternId=${encodeURIComponent(params.get('patternId') || patternName.toLowerCase().replace(/\s+/g, '-'))}&session_id=${encodeURIComponent(sessionId || 'mock_session')}`, {
-        credentials: 'include',
-      });
-      const data = await response.json();
-      if (response.ok && data.downloadUrl) {
-        downloadLink = data.downloadUrl;
+    let statusText = 'We\'re confirming your payment...';
+    if (sessionId) {
+      try {
+        const response = await fetch(`/api/patterns/download?patternName=${encodeURIComponent(patternName)}&patternId=${encodeURIComponent(patternId)}&session_id=${encodeURIComponent(sessionId)}`, {
+          credentials: 'include',
+        });
+        const data = await response.json();
+        if (response.ok && data.downloadUrl) {
+          downloadLink = data.downloadUrl;
+          statusText = 'Payment successful';
+        } else if (response.status === 402) {
+          statusText = 'Payment is still being confirmed.';
+        }
+      } catch (error) {
+        statusText = 'Payment is still being confirmed.';
       }
-    } catch (error) {
-      downloadLink = '/patterns.html';
     }
 
     container.innerHTML = `
       <div class="success-box">
-        <div class="label">Payment successful</div>
+        <div class="label">${statusText}</div>
         <h2 style="margin-top: 8px;">Your pattern is ready</h2>
         <p class="description">${patternName} has been added to your secure library. The link below is private and expires after 48 hours.</p>
       </div>
@@ -653,11 +660,39 @@ async function renderConfirmation() {
 
   const order = JSON.parse(localStorage.getItem('maison-miro-order') || '{}');
   const customer = order.customer || { firstName: 'Customer', email: 'hello@example.com' };
+  const orderId = order.orderId || params.get('orderId');
+  const sessionId = params.get('session_id');
+  let orderStatus = 'pending';
+  let statusLabel = 'We\'re confirming your payment';
+  let statusText = 'Your payment is being verified. Please keep this tab open while we confirm it.';
+
+  if (sessionId) {
+    try {
+      const response = await fetch(`/api/orders/confirm?session_id=${encodeURIComponent(sessionId)}&orderId=${encodeURIComponent(orderId || '')}`, {
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (response.ok && data.status === 'paid') {
+        orderStatus = 'paid';
+        statusLabel = 'Order confirmed';
+        statusText = `Your order #${orderId || data.orderId || 'N/A'} has been paid and is now being prepared.`;
+        order.status = 'Paid';
+        localStorage.setItem('maison-miro-order', JSON.stringify({ ...order, status: 'Paid' }));
+      } else if (response.status === 202 || data.status === 'pending') {
+        statusLabel = 'We\'re confirming your payment';
+        statusText = 'Your payment is still being verified. We will update this page as soon as the checkout is confirmed.';
+      }
+    } catch (error) {
+      statusLabel = 'We\'re confirming your payment';
+      statusText = 'Your payment is still being verified. We will update this page as soon as the checkout is confirmed.';
+    }
+  }
+
   container.innerHTML = `
-    <div class="success-box">
-      <div class="label">Order confirmed</div>
+    <div class="success-box" style="${orderStatus === 'paid' ? '' : 'border-color: rgba(217,139,54,0.35); background: rgba(217,139,54,0.08);'}">
+      <div class="label">${statusLabel}</div>
       <h2 style="margin-top: 8px;">Thank you, ${customer.firstName}</h2>
-      <p class="description">Your order #${order.orderId || 'N/A'} has been paid and is now being prepared. A receipt was sent to ${customer.email}.</p>
+      <p class="description">${statusText}</p>
     </div>
     <div class="grid-two">
       <div class="summary-panel">

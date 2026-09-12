@@ -23,9 +23,28 @@
         <div class="page-hero">
           <h1>Portfolio manager</h1>
         </div>
+
+        <div class="form-panel" style="margin-bottom: 24px;">
+          <h3 data-portfolio-form-title>Add new portfolio item</h3>
+          <form data-portfolio-form>
+            <input type="hidden" name="id" />
+            <div class="form-grid">
+              <div class="form-field"><label>Title</label><input name="title" type="text" required /></div>
+              <div class="form-field"><label>Category</label><input name="category" type="text" value="Editorial" required /></div>
+              <div class="form-field"><label>Image</label><input name="imageFile" type="file" accept="image/*" /></div>
+              <div class="form-field"><label>Image URL</label><input name="image" type="text" placeholder="/uploads/filename.jpg" /></div>
+            </div>
+            <div class="btn-row" style="margin-top: 18px;">
+              <button class="btn btn-primary" type="submit">Save portfolio item</button>
+              <button class="btn btn-secondary" type="button" data-portfolio-cancel>Cancel</button>
+            </div>
+            <p class="form-message muted" data-form-message></p>
+          </form>
+        </div>
+
         <div class="form-panel">
           <table class="table">
-            <thead><tr><th>Collection</th><th>Images</th><th>Status</th></tr></thead>
+            <thead><tr><th>Collection</th><th>Image</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody data-portfolio-table></tbody>
           </table>
         </div>

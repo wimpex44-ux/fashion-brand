@@ -22,6 +22,8 @@ const {
   listDownloads,
   getDownloadByToken,
   createOrder,
+  getOrderById,
+  updateOrderStatus,
   createBooking,
   createContactMessage,
   createDownloadRecord,
@@ -44,6 +46,7 @@ const uploadDir = path.join(rootDir, 'uploads');
 const stripe = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== 'sk_test_placeholder'
   ? Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 const upload = multer({
   dest: uploadDir,
   limits: { fileSize: 5 * 1024 * 1024 },
@@ -78,6 +81,7 @@ app.use(cors({
   origin: true,
   credentials: true,
 }));
+app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(uploadDir));
@@ -172,6 +176,19 @@ async function createCheckoutSession({ lineItems, successUrl, cancelUrl, metadat
   });
 }
 
+async function verifyCheckoutSession(sessionId) {
+  if (!sessionId) {
+    throw new Error('A Stripe session ID is required.');
+  }
+
+  if (!stripe) {
+    return { id: sessionId, status: sessionId.startsWith('mock_') ? 'complete' : 'pending' };
+  }
+
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  return session;
+}
+
 app.post('/api/checkout', publicFormLimiter, async (req, res) => {
   const { customer, items, total, shipping } = req.body || {};
   const productItems = Array.isArray(items) ? items : [];
@@ -185,6 +202,15 @@ app.post('/api/checkout', publicFormLimiter, async (req, res) => {
 
   try {
     const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+    const order = await createOrder({
+      id: createId('order'),
+      customer: customer || {},
+      items: productItems,
+      total: Number(safeTotal),
+      shipping: Number(shipping || computedShipping),
+      status: 'Pending',
+    });
+
     const checkoutSession = await createCheckoutSession({
       lineItems: productItems.map((item) => ({
         price_data: {
@@ -194,22 +220,17 @@ app.post('/api/checkout', publicFormLimiter, async (req, res) => {
         },
         quantity: Number(item.qty || 1),
       })),
-      successUrl: `${baseUrl}/confirmation.html?type=order&status=paid`,
+      successUrl: `${baseUrl}/confirmation.html?type=order&orderId=${encodeURIComponent(order.id)}&status=paid`,
       cancelUrl: `${baseUrl}/checkout.html?cancelled=true`,
-      metadata: { customer: JSON.stringify(customer || {}) },
+      metadata: {
+        customer: JSON.stringify(customer || {}),
+        orderId: order.id,
+      },
       shippingAmount: Number(shipping || computedShipping),
     });
 
-    const order = await createOrder({
-      id: createId('order'),
-      customer: customer || {},
-      items: productItems,
-      total: Number(safeTotal),
-      shipping: Number(shipping || computedShipping),
-      status: 'Pending',
-      checkoutSessionId: checkoutSession.id,
-    });
-
+    await updateOrderStatus(order.id, 'Pending');
+    order.checkoutSessionId = checkoutSession.id;
     res.status(201).json({ ok: true, order, checkoutSessionUrl: checkoutSession.url });
   } catch (error) {
     res.status(500).json({ ok: false, message: error.message || 'Unable to create checkout session.' });
@@ -253,7 +274,7 @@ app.post('/api/patterns/purchase', publicFormLimiter, async (req, res) => {
         },
         quantity: 1,
       }],
-      successUrl: `${baseUrl}/confirmation.html?type=pattern&pattern=${encodeURIComponent(pattern.name || patternName)}&status=paid`,
+      successUrl: `${baseUrl}/confirmation.html?type=pattern&pattern=${encodeURIComponent(pattern.name || patternName)}&patternId=${encodeURIComponent(patternId)}&status=paid`,
       cancelUrl: `${baseUrl}/pattern-detail.html?id=${encodeURIComponent(patternId)}`,
       metadata: { patternId, patternName },
       shippingAmount: 0,
@@ -280,16 +301,17 @@ app.get('/api/patterns/download', publicFormLimiter, async (req, res) => {
   if (!selectedPatternId) {
     return res.status(400).json({ ok: false, message: 'Pattern reference is required.' });
   }
+  if (!sessionId) {
+    return res.status(400).json({ ok: false, message: 'A valid Stripe session is required before the pattern can be downloaded.' });
+  }
 
-  if (sessionId && stripe) {
-    try {
-      const session = await stripe.checkout.sessions.retrieve(sessionId);
-      if (session.status !== 'complete') {
-        return res.status(402).json({ ok: false, message: 'A completed payment is required before the download is released.' });
-      }
-    } catch (error) {
-      return res.status(402).json({ ok: false, message: 'Payment confirmation could not be verified.' });
+  try {
+    const session = await verifyCheckoutSession(sessionId);
+    if (session.status !== 'complete') {
+      return res.status(402).json({ ok: false, message: 'A completed payment is required before the download is released.' });
     }
+  } catch (error) {
+    return res.status(402).json({ ok: false, message: 'Payment confirmation could not be verified.' });
   }
 
   const token = createId('download_token');
@@ -358,6 +380,75 @@ app.post('/api/admin/upload', requireAdminSession, requireCsrf, upload.single('i
 
   const publicUrl = `/uploads/${req.file.filename}`;
   return res.status(201).json({ ok: true, url: publicUrl, fileName: req.file.originalname });
+});
+
+app.post('/api/webhooks/stripe', async (req, res) => {
+  if (!stripe) {
+    return res.status(200).json({ ok: true, ignored: true });
+  }
+
+  const sig = req.headers['stripe-signature'];
+  if (!sig || !webhookSecret) {
+    return res.status(400).json({ ok: false, message: 'Stripe webhook signature is required.' });
+  }
+
+  let event;
+  try {
+    event = Stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+  } catch (error) {
+    return res.status(400).json({ ok: false, message: error.message || 'Webhook verification failed.' });
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    const orderId = session.metadata && session.metadata.orderId;
+    const patternId = session.metadata && session.metadata.patternId;
+
+    if (orderId) {
+      updateOrderStatus(orderId, 'Paid');
+    }
+
+    if (patternId) {
+      const pattern = (await listPatterns()).find((item) => item.id === patternId);
+      if (pattern) {
+        const token = createId('download_token');
+        await createDownloadRecord({
+          patternId,
+          patternName: pattern.name,
+          token,
+          expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+        });
+      }
+    }
+  }
+
+  return res.status(200).json({ ok: true });
+});
+
+app.get('/api/orders/confirm', publicFormLimiter, async (req, res) => {
+  const { session_id, orderId } = req.query || {};
+  const sessionId = Array.isArray(session_id) ? session_id[0] : session_id;
+  const selectedOrderId = Array.isArray(orderId) ? orderId[0] : orderId;
+
+  if (!sessionId) {
+    return res.status(400).json({ ok: false, message: 'A Stripe session ID is required for payment confirmation.' });
+  }
+
+  try {
+    const session = await verifyCheckoutSession(sessionId);
+    if (session.status !== 'complete') {
+      return res.status(202).json({ ok: true, status: 'pending', message: 'Payment is still being confirmed.' });
+    }
+
+    const order = selectedOrderId ? getOrderById(selectedOrderId) : null;
+    if (order && order.status !== 'Paid') {
+      updateOrderStatus(order.id, 'Paid');
+    }
+
+    return res.json({ ok: true, status: 'paid', orderId: order ? order.id : selectedOrderId || null });
+  } catch (error) {
+    return res.status(502).json({ ok: false, message: 'Unable to verify the Stripe session.' });
+  }
 });
 
 app.post('/api/admin/logout', (req, res) => {

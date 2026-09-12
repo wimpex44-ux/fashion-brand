@@ -273,11 +273,27 @@ async function createOrder(order) {
     total: Number(order.total || 0),
     shipping: Number(order.shipping || 0),
     status: order.status || 'Pending',
+    checkoutSessionId: order.checkoutSessionId || '',
     createdAt: new Date().toISOString(),
   };
   db.orders.push(record);
   writeDb(db);
   return record;
+}
+
+function getOrderById(orderId) {
+  const db = readDb();
+  return db.orders.find((order) => order.id === orderId) || null;
+}
+
+function updateOrderStatus(orderId, status) {
+  const db = readDb();
+  const index = db.orders.findIndex((order) => order.id === orderId);
+  if (index === -1) return null;
+  db.orders[index].status = status;
+  db.orders[index].updatedAt = new Date().toISOString();
+  writeDb(db);
+  return db.orders[index];
 }
 
 async function createBooking(payload) {
@@ -456,6 +472,8 @@ module.exports = {
   listDownloads,
   getDownloadByToken,
   createOrder,
+  getOrderById,
+  updateOrderStatus,
   createBooking,
   createContactMessage,
   createDownloadRecord,

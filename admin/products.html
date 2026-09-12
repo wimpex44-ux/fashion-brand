@@ -23,9 +23,35 @@
         <div class="page-hero">
           <h1>Products manager</h1>
         </div>
+
+        <div class="form-panel" style="margin-bottom: 24px;">
+          <h3 data-product-form-title>Add new product</h3>
+          <form data-product-form>
+            <input type="hidden" name="id" />
+            <div class="form-grid">
+              <div class="form-field"><label>Name</label><input name="name" type="text" required /></div>
+              <div class="form-field"><label>Category</label><input name="category" type="text" value="Essentials" required /></div>
+              <div class="form-field"><label>Color</label><input name="color" type="text" value="Neutral" /></div>
+              <div class="form-field"><label>Price</label><input name="price" type="number" step="0.01" min="0" required /></div>
+              <div class="form-field"><label>Original price</label><input name="originalPrice" type="number" step="0.01" min="0" /></div>
+              <div class="form-field full"><label>Sizes</label><input name="sizes" type="text" placeholder="XS, S, M, L, XL" /></div>
+              <div class="form-field full"><label>Description</label><textarea name="description" required></textarea></div>
+              <div class="form-field"><label>Main image</label><input name="imageFile" type="file" accept="image/*" /></div>
+              <div class="form-field"><label>Image URL</label><input name="image" type="text" placeholder="/uploads/filename.jpg" /></div>
+              <div class="form-field full"><label>Gallery images</label><input name="galleryFiles" type="file" accept="image/*" multiple /></div>
+              <div class="form-field full"><label>Gallery URLs</label><input name="gallery" type="text" placeholder="Comma-separated image URLs" /></div>
+            </div>
+            <div class="btn-row" style="margin-top: 18px;">
+              <button class="btn btn-primary" type="submit">Save product</button>
+              <button class="btn btn-secondary" type="button" data-product-cancel>Cancel</button>
+            </div>
+            <p class="form-message muted" data-form-message></p>
+          </form>
+        </div>
+
         <div class="form-panel">
           <table class="table">
-            <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th></tr></thead>
+            <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Sizes</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody data-product-table></tbody>
           </table>
         </div>

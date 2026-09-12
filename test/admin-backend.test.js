@@ -60,7 +60,6 @@ test('admin uploads require CSRF protection for state-changing requests', async 
         const response = await fetch('http://127.0.0.1:4011/api/health', { signal: AbortSignal.timeout(1000) });
         if (response.ok) return;
       } catch (error) {
-        // server still starting
       }
       await new Promise((resolve) => setTimeout(resolve, 250));
     }
