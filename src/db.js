@@ -6,7 +6,11 @@ const dataDir = path.join(__dirname, '..', 'data');
 const dbPath = path.join(dataDir, 'maison_miro.db');
 const seedPath = path.join(dataDir, 'seed.json');
 const adminEmail = String(process.env.ADMIN_EMAIL || 'studio@maisonmiro.com').trim();
-const adminPassword = String(process.env.ADMIN_PASSWORD || 'atelier2025');
+const adminPassword = String(process.env.ADMIN_PASSWORD || '').trim();
+
+if (!adminPassword) {
+  throw new Error('Missing required env ADMIN_PASSWORD. Set ADMIN_PASSWORD before starting the app.');
+}
 
 function ensureDataDir() {
   if (!fs.existsSync(dataDir)) {

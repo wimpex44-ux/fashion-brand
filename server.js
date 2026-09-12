@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
 const rateLimit = require('express-rate-limit');
+const multer = require('multer');
 const Stripe = require('stripe');
 require('dotenv').config();
 
@@ -39,7 +40,23 @@ const {
 const app = express();
 const PORT = process.env.PORT || 3000;
 const rootDir = __dirname;
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
+const uploadDir = path.join(rootDir, 'uploads');
+const stripe = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== 'sk_test_placeholder'
+  ? Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
+const upload = multer({
+  dest: uploadDir,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      cb(new Error('Only image uploads are allowed.'));
+      return;
+    }
+    cb(null, true);
+  },
+});
+
+fs.mkdirSync(uploadDir, { recursive: true });
 
 const adminRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -63,6 +80,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(uploadDir));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'maison-miro-dev-secret',
   resave: false,
@@ -129,6 +147,31 @@ app.get('/api/bookings', async (req, res) => {
   res.json({ bookings: await listBookings() });
 });
 
+async function createCheckoutSession({ lineItems, successUrl, cancelUrl, metadata, shippingAmount }) {
+  if (!stripe) {
+    const sessionId = createId('mock_session');
+    return {
+      id: sessionId,
+      url: `${successUrl}&session_id=${encodeURIComponent(sessionId)}`,
+      mock: true,
+      shippingAmount,
+      metadata,
+    };
+  }
+
+  return stripe.checkout.sessions.create({
+    mode: 'payment',
+    line_items: lineItems,
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    metadata,
+    payment_method_types: ['card'],
+    shipping_options: shippingAmount !== undefined && shippingAmount > 0
+      ? [{ shipping_rate_data: { type: 'fixed_amount', fixed_amount: { amount: Math.round(Number(shippingAmount) * 100), currency: 'usd' }, display_name: 'Shipping' } }]
+      : undefined,
+  });
+}
+
 app.post('/api/checkout', publicFormLimiter, async (req, res) => {
   const { customer, items, total, shipping } = req.body || {};
   const productItems = Array.isArray(items) ? items : [];
@@ -141,9 +184,9 @@ app.post('/api/checkout', publicFormLimiter, async (req, res) => {
   }
 
   try {
-    const checkoutSession = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      line_items: productItems.map((item) => ({
+    const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+    const checkoutSession = await createCheckoutSession({
+      lineItems: productItems.map((item) => ({
         price_data: {
           currency: 'usd',
           product_data: { name: item.product?.name || 'Maison Miro Item' },
@@ -151,13 +194,10 @@ app.post('/api/checkout', publicFormLimiter, async (req, res) => {
         },
         quantity: Number(item.qty || 1),
       })),
-      success_url: `${process.env.APP_URL || 'http://localhost:3000'}/confirmation.html?type=order&status=paid`,
-      cancel_url: `${process.env.APP_URL || 'http://localhost:3000'}/checkout.html?cancelled=true`,
-      metadata: {
-        customer: JSON.stringify(customer || {}),
-      },
-      payment_method_types: ['card'],
-      shipping_options: [{ shipping_rate_data: { type: 'fixed_amount', fixed_amount: { amount: Math.round((Number(shipping || computedShipping) || 0) * 100), currency: 'usd' }, display_name: 'Shipping' } }],
+      successUrl: `${baseUrl}/confirmation.html?type=order&status=paid`,
+      cancelUrl: `${baseUrl}/checkout.html?cancelled=true`,
+      metadata: { customer: JSON.stringify(customer || {}) },
+      shippingAmount: Number(shipping || computedShipping),
     });
 
     const order = await createOrder({
@@ -166,7 +206,8 @@ app.post('/api/checkout', publicFormLimiter, async (req, res) => {
       items: productItems,
       total: Number(safeTotal),
       shipping: Number(shipping || computedShipping),
-      status: 'Paid',
+      status: 'Pending',
+      checkoutSessionId: checkoutSession.id,
     });
 
     res.status(201).json({ ok: true, order, checkoutSessionUrl: checkoutSession.url });
@@ -194,19 +235,75 @@ app.post('/api/patterns/purchase', publicFormLimiter, async (req, res) => {
   if (!patternId || !patternName) {
     return res.status(400).json({ ok: false, message: 'Pattern selection is required.' });
   }
-  const token = createId('download');
+
+  const pattern = (await listPatterns()).find((item) => item.id === patternId) || {
+    id: patternId,
+    name: patternName,
+    price: 0,
+  };
+
+  try {
+    const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+    const checkoutSession = await createCheckoutSession({
+      lineItems: [{
+        price_data: {
+          currency: 'usd',
+          product_data: { name: pattern.name || patternName },
+          unit_amount: Math.round(Number(pattern.price || 0) * 100),
+        },
+        quantity: 1,
+      }],
+      successUrl: `${baseUrl}/confirmation.html?type=pattern&pattern=${encodeURIComponent(pattern.name || patternName)}&status=paid`,
+      cancelUrl: `${baseUrl}/pattern-detail.html?id=${encodeURIComponent(patternId)}`,
+      metadata: { patternId, patternName },
+      shippingAmount: 0,
+    });
+
+    return res.status(201).json({
+      ok: true,
+      checkoutSessionUrl: checkoutSession.url,
+      patternId,
+      patternName,
+      sessionId: checkoutSession.id,
+    });
+  } catch (error) {
+    return res.status(500).json({ ok: false, message: error.message || 'Unable to create pattern checkout session.' });
+  }
+});
+
+app.get('/api/patterns/download', publicFormLimiter, async (req, res) => {
+  const { patternId, patternName, session_id } = req.query || {};
+  const selectedPatternId = Array.isArray(patternId) ? patternId[0] : patternId;
+  const selectedPatternName = Array.isArray(patternName) ? patternName[0] : patternName;
+  const sessionId = Array.isArray(session_id) ? session_id[0] : session_id;
+
+  if (!selectedPatternId) {
+    return res.status(400).json({ ok: false, message: 'Pattern reference is required.' });
+  }
+
+  if (sessionId && stripe) {
+    try {
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+      if (session.status !== 'complete') {
+        return res.status(402).json({ ok: false, message: 'A completed payment is required before the download is released.' });
+      }
+    } catch (error) {
+      return res.status(402).json({ ok: false, message: 'Payment confirmation could not be verified.' });
+    }
+  }
+
+  const token = createId('download_token');
   const record = await createDownloadRecord({
-    patternId,
-    patternName,
+    patternId: selectedPatternId,
+    patternName: selectedPatternName || 'Pattern',
     token,
     expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
   });
 
-  res.status(201).json({
+  return res.json({
     ok: true,
     downloadUrl: `/api/download/${record.token}`,
-    token,
-    expiresAt: record.expiresAt,
+    fileName: `${record.patternName || 'pattern'}.pdf`,
   });
 });
 
@@ -252,6 +349,15 @@ app.post('/api/admin/login', adminRateLimiter, ensureCsrfToken, async (req, res)
     },
     csrfToken: req.session.csrfToken,
   });
+});
+
+app.post('/api/admin/upload', requireAdminSession, requireCsrf, upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ ok: false, message: 'An image file is required.' });
+  }
+
+  const publicUrl = `/uploads/${req.file.filename}`;
+  return res.status(201).json({ ok: true, url: publicUrl, fileName: req.file.originalname });
 });
 
 app.post('/api/admin/logout', (req, res) => {

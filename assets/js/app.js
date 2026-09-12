@@ -16,53 +16,41 @@ async function loadData() {
       {
         id: 'solstice-tee',
         name: 'Solstice Tee',
-    category: 'Tshirt',
-    color: 'Rose',
-    price: 118,
-    originalPrice: 160,
-    theme: { bg: '#f5dfe5', accent: '#c1547d', accent2: '#f8edf1' },
-    sizes: ['XS','S','M','L','XL','2XL'],
-    image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80',
-    gallery: [
-      'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80'
-    ],
-    description: 'A softly structured cotton tee cut for an effortless drape, with a sculpted neckline and refined finish for elevated everyday dressing.'
-  },
-  {
-    id: 'lune-hoodie',
-    name: 'Lune Hoodie',
-    category: 'Hoodies',
-    color: 'Ivory',
-    price: 186,
-    originalPrice: 230,
-    theme: { bg: '#f4efe8', accent: '#9f7d5d', accent2: '#efe8db' },
-    sizes: ['S','M','L','XL','2XL','3XL'],
-    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80',
-    gallery: [
-      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=900&q=80'
-    ],
-    description: 'An oversized hoodie designed in premium brushed fleece that feels contemporary yet timeless with a soft, casual silhouette.'
-  },
-  {
-    id: 'atelier-sweat',
-    name: 'Atelier Sweat',
-    category: 'Sweatshirts',
-    color: 'Stone',
-    price: 168,
-    originalPrice: 215,
-    theme: { bg: '#e8e4df', accent: '#7d756d', accent2: '#f4f1ef' },
-    sizes: ['S','M','L','XL','2XL'],
-    image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=900&q=80',
-    gallery: [
-      'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80'
-    ],
-    description: 'A refined everyday sweatshirt with a tailored fit, clean hems, and a weighty hand-feel that transforms a classic staple.'
+        category: 'Tshirt',
+        color: 'Rose',
+        price: 118,
+        originalPrice: 160,
+        theme: { bg: '#f5dfe5', accent: '#c1547d', accent2: '#f8edf1' },
+        sizes: ['XS','S','M','L','XL','2XL'],
+        image: '/assets/images/placeholder-tee.svg',
+        gallery: ['/assets/images/placeholder-tee.svg', '/assets/images/placeholder-sweat.svg', '/assets/images/placeholder-hoodie.svg'],
+        description: 'A softly structured cotton tee cut for an effortless drape, with a sculpted neckline and refined finish for elevated everyday dressing.'
+      },
+      {
+        id: 'lune-hoodie',
+        name: 'Lune Hoodie',
+        category: 'Hoodies',
+        color: 'Ivory',
+        price: 186,
+        originalPrice: 230,
+        theme: { bg: '#f4efe8', accent: '#9f7d5d', accent2: '#efe8db' },
+        sizes: ['S','M','L','XL','2XL','3XL'],
+        image: '/assets/images/placeholder-hoodie.svg',
+        gallery: ['/assets/images/placeholder-hoodie.svg', '/assets/images/placeholder-tee.svg', '/assets/images/placeholder-sweat.svg'],
+        description: 'An oversized hoodie designed in premium brushed fleece that feels contemporary yet timeless with a soft, casual silhouette.'
+      },
+      {
+        id: 'atelier-sweat',
+        name: 'Atelier Sweat',
+        category: 'Sweatshirts',
+        color: 'Stone',
+        price: 168,
+        originalPrice: 215,
+        theme: { bg: '#e8e4df', accent: '#7d756d', accent2: '#f4f1ef' },
+        sizes: ['S','M','L','XL','2XL'],
+        image: '/assets/images/placeholder-sweat.svg',
+        gallery: ['/assets/images/placeholder-sweat.svg', '/assets/images/placeholder-tee.svg', '/assets/images/placeholder-hoodie.svg'],
+        description: 'A refined everyday sweatshirt with a tailored fit, clean hems, and a weighty hand-feel that transforms a classic staple.'
       }
     ];
 
@@ -70,39 +58,39 @@ async function loadData() {
       {
         id: 'milan-ruffle',
         name: 'Milan Ruffle Blouse',
-    skill: 'Intermediate',
-    price: 32,
-    image: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80',
-    preview: ['https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80', 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80'],
-    description: 'A romantic blouse pattern with soft draping and a sculptural collar, crafted for confident day-to-evening dressing.'
-  },
-  {
-    id: 'noir-coat',
-    name: 'Noir Wool Coat',
-    skill: 'Advanced',
-    price: 48,
-    image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80',
-    preview: ['https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80', 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80'],
-    description: 'A structured coat with set-in sleeves and tailored lapels, designed for a polished silhouette with technique-driven finishing.'
-  },
-  {
-    id: 'marais-dress',
-    name: 'Marais Slip Dress',
-    skill: 'Beginner',
-    price: 28,
-    image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80',
-    preview: ['https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80', 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=900&q=80'],
-    description: 'A fluid, easy-to-sew slip dress with a dramatic hem and bias-cut drape, ideal for minimal wardrobes and statement layering.'
+        skill: 'Intermediate',
+        price: 32,
+        image: '/assets/images/placeholder-pattern-1.svg',
+        preview: ['/assets/images/placeholder-pattern-1.svg', '/assets/images/placeholder-pattern-2.svg'],
+        description: 'A romantic blouse pattern with soft draping and a sculptural collar, crafted for confident day-to-evening dressing.'
+      },
+      {
+        id: 'noir-coat',
+        name: 'Noir Wool Coat',
+        skill: 'Advanced',
+        price: 48,
+        image: '/assets/images/placeholder-pattern-2.svg',
+        preview: ['/assets/images/placeholder-pattern-2.svg', '/assets/images/placeholder-pattern-3.svg'],
+        description: 'A structured coat with set-in sleeves and tailored lapels, designed for a polished silhouette with technique-driven finishing.'
+      },
+      {
+        id: 'marais-dress',
+        name: 'Marais Slip Dress',
+        skill: 'Beginner',
+        price: 28,
+        image: '/assets/images/placeholder-pattern-3.svg',
+        preview: ['/assets/images/placeholder-pattern-3.svg', '/assets/images/placeholder-pattern-1.svg'],
+        description: 'A fluid, easy-to-sew slip dress with a dramatic hem and bias-cut drape, ideal for minimal wardrobes and statement layering.'
       }
     ];
 
     portfolio = [
-      { title: 'Femme Atelier', category: 'Editorial', image: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1200&q=80' },
-  { title: 'Aubade Capsule', category: 'Collection', image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&q=80' },
-  { title: 'Riverline', category: 'Campaign', image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80' },
-  { title: 'After Hours', category: 'Styling', image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=80' },
-  { title: 'Palette Study', category: 'Collection', image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1200&q=80' },
-      { title: 'Modern Tailor', category: 'Editorial', image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80' }
+      { title: 'Femme Atelier', category: 'Editorial', image: '/assets/images/placeholder-portfolio-1.svg' },
+      { title: 'Aubade Capsule', category: 'Collection', image: '/assets/images/placeholder-portfolio-2.svg' },
+      { title: 'Riverline', category: 'Campaign', image: '/assets/images/placeholder-portfolio-3.svg' },
+      { title: 'After Hours', category: 'Styling', image: '/assets/images/placeholder-portfolio-4.svg' },
+      { title: 'Palette Study', category: 'Collection', image: '/assets/images/placeholder-portfolio-5.svg' },
+      { title: 'Modern Tailor', category: 'Editorial', image: '/assets/images/placeholder-portfolio-6.svg' }
     ];
   }
 }
@@ -121,9 +109,11 @@ function saveCart(cart) { localStorage.setItem('maison-miro-cart', JSON.stringif
 
 function addToCart(productId, qty = 1, size = 'M') {
   const cart = getCart();
-  const existing = cart.find((item) => item.id === productId && item.size === size);
-  if (existing) { existing.qty += qty; }
-  else { cart.push({ id: productId, size, qty }); }
+  const safeQty = Number(qty) > 0 ? Math.min(Number(qty), 10) : 1;
+  const normalizedSize = size || 'M';
+  const existing = cart.find((item) => item.id === productId && item.size === normalizedSize);
+  if (existing) { existing.qty = Math.min(existing.qty + safeQty, 10); }
+  else { cart.push({ id: productId, size: normalizedSize, qty: safeQty }); }
   saveCart(cart);
   updateCartBadge();
   if (window.location.pathname.includes('cart.html')) { renderCart(); }
@@ -380,10 +370,11 @@ function renderProductDetail() {
     </div>
   `;
 
-  let qty = 1; let selectedSize = 'XL';
+  const availableSizes = Array.isArray(product.sizes) && product.sizes.length ? product.sizes : ['M'];
+  let qty = 1; let selectedSize = availableSizes.includes('XL') ? 'XL' : availableSizes[0] || 'M';
   const qtyNode = document.querySelector('[data-qty]');
   document.querySelector('[data-decrease-qty]').onclick = () => { qty = Math.max(1, qty - 1); qtyNode.textContent = qty; };
-  document.querySelector('[data-increase-qty]').onclick = () => { qty = qty + 1; qtyNode.textContent = qty; };
+  document.querySelector('[data-increase-qty]').onclick = () => { qty = Math.min(10, qty + 1); qtyNode.textContent = qty; };
   document.querySelectorAll('[data-size]').forEach((button) => {
     button.onclick = () => {
       selectedSize = button.dataset.size; 
@@ -447,12 +438,17 @@ function renderPatternDetail() {
       const response = await fetch('/api/patterns/purchase', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ patternId: pattern.id, patternName: pattern.name })
+        body: JSON.stringify({ patternId: pattern.id, patternName: pattern.name }),
+        credentials: 'include',
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Unable to complete pattern purchase');
-      localStorage.setItem('maison-miro-download-link', JSON.stringify(data));
-      window.location.href = 'confirmation.html?type=pattern&pattern=' + encodeURIComponent(pattern.name) + '&download=' + encodeURIComponent(window.location.origin + data.downloadUrl);
+      if (data.checkoutSessionUrl) {
+        const redirectUrl = data.checkoutSessionUrl || `${window.location.origin}/confirmation.html?type=pattern&pattern=${encodeURIComponent(pattern.name)}&status=paid&session_id=${encodeURIComponent(data.sessionId || 'mock_session')}`;
+        window.location.href = redirectUrl;
+        return;
+      }
+      throw new Error('The pattern purchase flow is unavailable.');
     } catch (error) {
       alert(error.message || 'Unable to complete purchase. Please try again.');
     }
@@ -496,11 +492,41 @@ function renderCart() {
     <div class="summary-row"><span>Shipping</span><strong>Calculated at checkout</strong></div>
     <div class="summary-row total"><span>Total</span><strong>${formatPrice(subtotal)}</strong></div>
     <div style="margin-top: 18px; display:flex; gap: 10px;">
-      <input type="text" placeholder="Promo code (optional)" aria-label="Promo code">
-      <button class="btn-small primary" type="button">Apply</button>
+      <input type="text" placeholder="Promo code (optional)" aria-label="Promo code" data-promo-code>
+      <button class="btn-small primary" type="button" data-apply-promo>Apply</button>
     </div>
     <a class="btn btn-primary" href="checkout.html" style="width:100%; margin-top:20px;">Checkout</a>
   `;
+
+  const applyPromoButton = document.querySelector('[data-apply-promo]');
+  if (applyPromoButton) {
+    applyPromoButton.onclick = () => {
+      const promoInput = document.querySelector('[data-promo-code]');
+      const promoCode = (promoInput?.value || '').trim().toLowerCase();
+      if (!promoCode) {
+        alert('Enter a promo code first.');
+        return;
+      }
+      if (promoCode === 'miro10') {
+        const promoDiscount = subtotal * 0.1;
+        const updatedTotal = Math.max(subtotal - promoDiscount, 0);
+        const totalNode = summary.querySelector('.summary-row.total');
+        const promoLine = summary.querySelector('[data-promo-line]');
+        if (promoLine) promoLine.remove();
+        const discountRow = document.createElement('div');
+        discountRow.className = 'summary-row';
+        discountRow.dataset.promoLine = 'true';
+        discountRow.innerHTML = `<span>Promo: MIRO10</span><strong>-${formatPrice(promoDiscount)}</strong>`;
+        if (totalNode) {
+          totalNode.insertAdjacentElement('afterend', discountRow);
+          totalNode.querySelector('strong').textContent = formatPrice(updatedTotal);
+        }
+        alert('Promo code applied successfully.');
+        return;
+      }
+      alert('Promo code not recognized.');
+    };
+  }
 
   document.querySelectorAll('[data-remove-item]').forEach((button) => {
     button.onclick = () => {
@@ -568,6 +594,7 @@ function renderCheckout() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Unable to process payment');
 
+      if (!data.checkoutSessionUrl) throw new Error('Stripe checkout session is missing.');
       localStorage.setItem('maison-miro-order', JSON.stringify({
         orderId: data.order.id,
         customer: { firstName, email },
@@ -575,17 +602,17 @@ function renderCheckout() {
         items,
         date: new Date().toISOString(),
         shipping,
-        status: 'Paid'
+        status: 'Pending'
       }));
       saveCart([]);
-      window.location.href = 'confirmation.html?type=order&order=' + data.order.id;
+      window.location.href = data.checkoutSessionUrl;
     } catch (error) {
       alert(error.message || 'Unable to process payment. Please try again.');
     }
   };
 }
 
-function renderConfirmation() {
+async function renderConfirmation() {
   const params = new URLSearchParams(window.location.search);
   const type = params.get('type') || 'order';
   const container = document.querySelector('[data-confirmation]');
@@ -593,7 +620,21 @@ function renderConfirmation() {
 
   if (type === 'pattern') {
     const patternName = params.get('pattern') || 'Pattern';
-    const link = params.get('download') || 'https://secure.maisonmiro.com/download/pattern';
+    const sessionId = params.get('session_id');
+
+    let downloadLink = '/patterns.html';
+    try {
+      const response = await fetch(`/api/patterns/download?patternName=${encodeURIComponent(patternName)}&patternId=${encodeURIComponent(params.get('patternId') || patternName.toLowerCase().replace(/\s+/g, '-'))}&session_id=${encodeURIComponent(sessionId || 'mock_session')}`, {
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (response.ok && data.downloadUrl) {
+        downloadLink = data.downloadUrl;
+      }
+    } catch (error) {
+      downloadLink = '/patterns.html';
+    }
+
     container.innerHTML = `
       <div class="success-box">
         <div class="label">Payment successful</div>
@@ -603,7 +644,7 @@ function renderConfirmation() {
       <div class="download-list">
         <div class="download-item">
           <span>${patternName} PDF</span>
-          <a class="btn-small primary" href="${link}" target="_blank" rel="noreferrer">Download</a>
+          <a class="btn-small primary" href="${downloadLink}" target="_blank" rel="noreferrer">Download</a>
         </div>
       </div>
     `;

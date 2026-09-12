@@ -1,17 +1,44 @@
 const page = document.body.dataset.page || 'dashboard';
 
+async function getCsrfToken() {
+  const storedToken = localStorage.getItem('maison-miro-csrf');
+  if (storedToken) return storedToken;
+
+  const response = await fetch('/api/csrf-token', { credentials: 'include' });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.csrfToken) {
+    throw new Error(data.message || 'Unable to load a valid CSRF token.');
+  }
+
+  localStorage.setItem('maison-miro-csrf', data.csrfToken);
+  return data.csrfToken;
+}
+
 async function apiFetch(url, options = {}) {
+  const method = String(options.method || 'GET').toUpperCase();
+  const requestHeaders = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+  };
+
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    const csrfToken = await getCsrfToken();
+    requestHeaders['X-CSRF-Token'] = csrfToken;
+  }
+
   const response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
     ...options,
+    headers: requestHeaders,
+    credentials: 'include',
   });
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(data.message || 'Request failed');
+  }
+
+  if (data.csrfToken) {
+    localStorage.setItem('maison-miro-csrf', data.csrfToken);
   }
   return data;
 }
@@ -152,6 +179,9 @@ function handleLogin() {
       if (message) {
         message.textContent = 'Login successful — redirecting...';
       }
+      if (response.csrfToken) {
+        localStorage.setItem('maison-miro-csrf', response.csrfToken);
+      }
       localStorage.setItem('maison-miro-admin', JSON.stringify(response.admin));
       setTimeout(() => {
         window.location.href = 'index.html';
@@ -160,6 +190,39 @@ function handleLogin() {
       if (message) {
         message.textContent = error.message;
       }
+    }
+  });
+}
+
+function handleMediaUpload() {
+  const form = document.querySelector('[data-media-upload-form]');
+  if (!form) return;
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const fileInput = form.querySelector('input[type="file"]');
+    const notice = form.querySelector('[data-upload-status]');
+    if (!fileInput || !fileInput.files[0]) {
+      if (notice) notice.textContent = 'Choose an image before uploading.';
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('image', fileInput.files[0]);
+      const csrfToken = await getCsrfToken();
+      const response = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrfToken },
+        body: formData,
+        credentials: 'include',
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || 'Upload failed.');
+      if (notice) notice.textContent = `Uploaded: ${data.url}`;
+      form.reset();
+    } catch (error) {
+      if (notice) notice.textContent = error.message;
     }
   });
 }
@@ -185,3 +248,4 @@ if (page === 'portfolio') {
 if (page === 'login') {
   handleLogin();
 }
+handleMediaUpload();
