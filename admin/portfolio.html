@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio Manager | Maison Miro Admin</title>
+    <link rel="stylesheet" href="../assets/css/styles.css" />
+  </head>
+  <body data-page="portfolio">
+    <div class="admin-shell">
+      <aside class="sidebar">
+        <div class="brand">Maison Miro</div>
+        <nav class="side-nav" aria-label="Admin menu">
+          <a class="side-link" href="index.html">Dashboard</a>
+          <a class="side-link" href="products.html">Products</a>
+          <a class="side-link" href="patterns.html">Patterns</a>
+          <a class="side-link" href="bookings.html">Bookings</a>
+          <a class="side-link active" href="portfolio.html">Portfolio</a>
+          <a class="side-link" href="orders.html">Orders</a>
+        </nav>
+      </aside>
+      <main class="admin-main">
+        <div class="page-hero">
+          <h1>Portfolio manager</h1>
+        </div>
+        <div class="form-panel">
+          <table class="table">
+            <thead><tr><th>Collection</th><th>Images</th><th>Status</th></tr></thead>
+            <tbody data-portfolio-table></tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+    <script src="admin.js"></script>
+  </body>
+</html>

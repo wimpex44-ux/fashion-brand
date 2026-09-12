@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Contact the Maison Miro studio for custom tailoring, collaborations, or general questions." />
+    <title>Contact | Maison Miro</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body data-page="contact">
+    <header class="site-header">
+      <div class="container navbar">
+        <a href="index.html" class="brand">Maison Miro</a>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <div class="container page-hero">
+        <h1>Contact the studio</h1>
+      </div>
+      <div class="container checkout-layout">
+        <section class="form-panel">
+          <form data-ajax-form>
+            <div class="form-grid">
+              <div class="form-field"><label for="contactName">Name</label><input id="contactName" required /></div>
+              <div class="form-field"><label for="contactEmail">Email</label><input id="contactEmail" type="email" required /></div>
+              <div class="form-field full"><label for="message">Your message</label><textarea id="message"></textarea></div>
+            </div>
+            <button class="btn btn-primary contact-submit" type="submit">Send message</button>
+            <p class="form-message" data-form-message></p>
+          </form>
+        </section>
+        <aside class="summary-panel">
+          <h3>Studio info</h3>
+          <p class="description">hello@maisonmiro.com<br>+1 (415) 210-3443<br>88 Mercer Street, Studio 3, New York</p>
+        </aside>
+      </div>
+    </main>
+
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>

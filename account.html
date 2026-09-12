@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Your Maison Miro account for order history, digital pattern access, and booking records." />
+    <title>Account | Maison Miro</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body data-page="account">
+    <header class="site-header">
+      <div class="container navbar">
+        <a href="index.html" class="brand">Maison Miro</a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="index.html" class="nav-pill">Home</a>
+          <a href="shop.html" class="nav-pill">Shop</a>
+          <a href="patterns.html" class="nav-pill">Patterns</a>
+          <a href="account.html" class="nav-pill active">Account</a>
+        </nav>
+        <div class="nav-actions">
+          <a href="cart.html" class="icon-button" aria-label="Cart">
+            🛒
+            <span class="cart-count hidden">0</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <div class="container page-hero">
+        <h1>My account</h1>
+      </div>
+      <div class="container checkout-layout">
+        <section class="form-panel">
+          <h3>Order history</h3>
+          <table class="table">
+            <thead><tr><th>Order</th><th>Date</th><th>Status</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td>#1042</td><td>12 Sep 2026</td><td><span class="status-pill status-paid">Paid</span></td><td>$238</td></tr>
+              <tr><td>#1018</td><td>19 Aug 2026</td><td><span class="status-pill status-paid">Paid</span></td><td>$118</td></tr>
+            </tbody>
+          </table>
+        </section>
+        <aside class="summary-panel">
+          <h3>Downloads</h3>
+          <div class="download-list">
+            <div class="download-item"><span>Milan Ruffle Blouse</span><a class="btn-small primary" href="pattern-detail.html?id=milan-ruffle">Open</a></div>
+            <div class="download-item"><span>Marais Slip Dress</span><a class="btn-small primary" href="pattern-detail.html?id=marais-dress">Open</a></div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Portfolio and lookbook from Maison Miro design studies, campaigns, and couture-inspired editorial work." />
+    <title>Portfolio | Maison Miro</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body data-page="portfolio">
+    <header class="site-header">
+      <div class="container navbar">
+        <a href="index.html" class="brand">Maison Miro</a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="index.html" class="nav-pill">Home</a>
+          <a href="shop.html" class="nav-pill">Shop</a>
+          <a href="patterns.html" class="nav-pill">Patterns</a>
+          <a href="portfolio.html" class="nav-pill active">Portfolio</a>
+        </nav>
+        <div class="nav-actions">
+          <a href="cart.html" class="icon-button" aria-label="Cart">
+            🛒
+            <span class="cart-count hidden">0</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <div class="container page-hero">
+        <div class="breadcrumbs"><a href="index.html">Home</a> / <span>Portfolio</span></div>
+        <h1>Lookbook & portfolio</h1>
+      </div>
+      <div class="container portfolio-grid" data-portfolio-grid></div>
+    </main>
+
+    <div class="lightbox" data-lightbox>
+      <div class="lightbox-content">
+        <img src="" alt="Portfolio preview" />
+        <div class="caption">
+          <span data-lightbox-caption></span>
+          <button class="btn-small" type="button" data-close-lightbox>Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>

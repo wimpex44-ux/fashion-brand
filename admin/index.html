@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Maison Miro Admin</title>
+    <link rel="stylesheet" href="../assets/css/styles.css" />
+  </head>
+  <body data-page="dashboard">
+    <div class="admin-shell">
+      <aside class="sidebar">
+        <div class="brand">Maison Miro</div>
+        <nav class="side-nav" aria-label="Admin menu">
+          <a class="side-link active" href="index.html">Dashboard</a>
+          <a class="side-link" href="products.html">Products</a>
+          <a class="side-link" href="patterns.html">Patterns</a>
+          <a class="side-link" href="bookings.html">Bookings</a>
+          <a class="side-link" href="portfolio.html">Portfolio</a>
+          <a class="side-link" href="orders.html">Orders</a>
+        </nav>
+      </aside>
+      <main class="admin-main">
+        <div class="page-hero">
+          <h1>Dashboard</h1>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi-card"><div class="label">Revenue</div><div class="big" data-kpi>0</div></div>
+          <div class="kpi-card"><div class="label">Orders</div><div class="big" data-kpi>0</div></div>
+          <div class="kpi-card"><div class="label">Bookings</div><div class="big" data-kpi>0</div></div>
+          <div class="kpi-card"><div class="label">Downloads</div><div class="big" data-kpi>0</div></div>
+        </div>
+        <div class="form-panel">
+          <h3>Recent orders</h3>
+          <table class="table">
+            <thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Total</th></tr></thead>
+            <tbody data-order-table>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+    <script src="admin.js"></script>
+  </body>
+</html>

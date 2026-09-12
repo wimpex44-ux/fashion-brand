@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Book a bespoke tailoring or design consultation with Maison Miro." />
+    <title>Book a Service | Maison Miro</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body data-page="book">
+    <header class="site-header">
+      <div class="container navbar">
+        <a href="index.html" class="brand">Maison Miro</a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="index.html" class="nav-pill">Home</a>
+          <a href="shop.html" class="nav-pill">Shop</a>
+          <a href="patterns.html" class="nav-pill">Patterns</a>
+          <a href="book.html" class="nav-pill active">Book</a>
+        </nav>
+        <div class="nav-actions">
+          <a href="cart.html" class="icon-button" aria-label="Cart">
+            🛒
+            <span class="cart-count hidden">0</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <div class="container page-hero">
+        <div class="breadcrumbs"><a href="index.html">Home</a> / <span>Book a Service</span></div>
+        <h1>Book a service</h1>
+      </div>
+      <div class="container checkout-layout">
+        <section class="form-panel">
+          <form data-ajax-form>
+            <div class="form-grid">
+              <div class="form-field"><label for="serviceType">Service</label><select id="serviceType"><option>Custom tailoring</option><option>Design consultation</option><option>Wardrobe editing</option></select></div>
+              <div class="form-field"><label for="bookingDate">Preferred date</label><input type="date" id="bookingDate" data-booking-date /></div>
+              <div class="form-field"><label for="bookingTime">Preferred time</label><input type="time" id="bookingTime" /></div>
+              <div class="form-field"><label for="name">Name</label><input type="text" id="name" required /></div>
+              <div class="form-field"><label for="contactEmail">Email</label><input type="email" id="contactEmail" required /></div>
+              <div class="form-field full"><label for="projectNotes">Project notes</label><textarea id="projectNotes"></textarea></div>
+            </div>
+            <button class="btn btn-primary booking-submit" type="submit">Request booking</button>
+            <p class="form-message" data-form-message></p>
+          </form>
+        </section>
+        <aside class="summary-panel">
+          <h3>Services</h3>
+          <ul class="order-list">
+            <li><strong>Custom tailoring</strong><br><span class="description">Precision alterations and made-to-measure fittings.</span></li>
+            <li><strong>Design consultation</strong><br><span class="description">Creative direction for capsule wardrobes, events, and styling edits.</span></li>
+            <li><strong>Wardrobe planning</strong><br><span class="description">Thoughtful curation and outfit strategy for everyday life.</span></li>
+          </ul>
+        </aside>
+      </div>
+    </main>
+
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>

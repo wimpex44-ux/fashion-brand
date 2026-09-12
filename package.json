@@ -1,0 +1,27 @@
+{
+  "name": "maison-miro-fullstack",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Full-stack fashion house storefront with catalog, booking, and downloadable patterns.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "fashion",
+    "ecommerce",
+    "express",
+    "stripes",
+    "patterns"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "stripe": "^17.1.0"
+  }
+}
