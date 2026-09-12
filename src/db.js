@@ -1,10 +1,12 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const crypto = require('node:crypto');
+const bcrypt = require('bcryptjs');
 
 const dataDir = path.join(__dirname, '..', 'data');
 const dbPath = path.join(dataDir, 'maison_miro.db');
 const seedPath = path.join(dataDir, 'seed.json');
+const adminEmail = String(process.env.ADMIN_EMAIL || 'studio@maisonmiro.com').trim();
+const adminPassword = String(process.env.ADMIN_PASSWORD || 'atelier2025');
 
 function ensureDataDir() {
   if (!fs.existsSync(dataDir)) {
@@ -17,7 +19,11 @@ function createId(prefix) {
 }
 
 function hashPassword(password) {
-  return crypto.createHash('sha256').update(String(password)).digest('hex');
+  return bcrypt.hashSync(String(password || ''), 12);
+}
+
+function comparePassword(password, hash) {
+  return bcrypt.compareSync(String(password || ''), String(hash || ''));
 }
 
 function getSeed() {
@@ -37,9 +43,10 @@ function defaultDb() {
     admin_users: [
       {
         id: 'admin_default',
-        email: 'studio@maisonmiro.com',
-        password_hash: hashPassword('atelier2025'),
+        email: adminEmail,
+        password_hash: hashPassword(adminPassword),
         name: 'Studio Admin',
+        must_change_password: true,
         created_at: new Date().toISOString(),
       },
     ],
@@ -66,7 +73,7 @@ function readDb() {
     const parsed = JSON.parse(raw);
     const base = defaultDb();
     return {
-      admin_users: Array.isArray(parsed.admin_users) ? parsed.admin_users : base.admin_users,
+      admin_users: Array.isArray(parsed.admin_users) && parsed.admin_users.length ? parsed.admin_users : base.admin_users,
       products: Array.isArray(parsed.products) ? parsed.products : base.products,
       patterns: Array.isArray(parsed.patterns) ? parsed.patterns : base.patterns,
       portfolio: Array.isArray(parsed.portfolio) ? parsed.portfolio : base.portfolio,
@@ -85,15 +92,6 @@ function readDb() {
 function writeDb(data) {
   ensureDataDir();
   fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
-}
-
-function parseJson(value, fallback = []) {
-  if (value === undefined || value === null || value === '') return fallback;
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    return fallback;
-  }
 }
 
 function normalizeProduct(product) {
@@ -143,14 +141,21 @@ async function initDatabase() {
   ensureDataDir();
   const db = readDb();
 
-  if (!db.admin_users || !db.admin_users.some((user) => user.email === 'studio@maisonmiro.com')) {
+  const defaultAdmin = db.admin_users.find((user) => (user.email || '').toLowerCase() === adminEmail.toLowerCase());
+  if (!defaultAdmin) {
     db.admin_users.push({
       id: 'admin_default',
-      email: 'studio@maisonmiro.com',
-      password_hash: hashPassword('atelier2025'),
+      email: adminEmail,
+      password_hash: hashPassword(adminPassword),
       name: 'Studio Admin',
+      must_change_password: true,
       created_at: new Date().toISOString(),
     });
+  } else {
+    defaultAdmin.email = adminEmail;
+    defaultAdmin.password_hash = defaultAdmin.password_hash || hashPassword(adminPassword);
+    defaultAdmin.name = defaultAdmin.name || 'Studio Admin';
+    defaultAdmin.must_change_password = defaultAdmin.must_change_password ?? true;
   }
 
   const seed = getSeed();
@@ -163,15 +168,32 @@ async function initDatabase() {
 }
 
 function getAdminUserByEmail(email) {
-  const user = readDb().admin_users.find((entry) => entry.email === email);
+  const lookup = String(email || '').trim().toLowerCase();
+  const user = readDb().admin_users.find((entry) => String(entry.email || '').trim().toLowerCase() === lookup);
   if (!user) return null;
-  return { id: user.id, email: user.email, name: user.name, passwordHash: user.password_hash };
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    passwordHash: user.password_hash,
+    mustChangePassword: Boolean(user.must_change_password),
+  };
 }
 
 function verifyAdminCredentials(email, password) {
   const user = getAdminUserByEmail(email);
   if (!user) return false;
-  return user.passwordHash === hashPassword(password);
+  return comparePassword(password, user.passwordHash);
+}
+
+function setAdminPassword(email, newPassword) {
+  const db = readDb();
+  const index = db.admin_users.findIndex((entry) => String(entry.email || '').trim().toLowerCase() === String(email || '').trim().toLowerCase());
+  if (index === -1) return false;
+  db.admin_users[index].password_hash = hashPassword(newPassword);
+  db.admin_users[index].must_change_password = false;
+  writeDb(db);
+  return true;
 }
 
 function listProducts() {
@@ -199,8 +221,7 @@ function listOrders() {
 }
 
 function listBookings() {
-  const rows = readDb().bookings;
-  return rows.map((row) => ({
+  return readDb().bookings.map((row) => ({
     id: row.id,
     ...row,
     status: row.status || 'Pending',
@@ -247,7 +268,7 @@ async function createOrder(order) {
     items: Array.isArray(order.items) ? order.items : [],
     total: Number(order.total || 0),
     shipping: Number(order.shipping || 0),
-    status: order.status || 'Paid',
+    status: order.status || 'Pending',
     createdAt: new Date().toISOString(),
   };
   db.orders.push(record);
@@ -421,6 +442,7 @@ module.exports = {
   createId,
   getAdminUserByEmail,
   verifyAdminCredentials,
+  setAdminPassword,
   listProducts,
   listPatterns,
   listPortfolio,

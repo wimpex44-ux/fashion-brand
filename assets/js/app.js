@@ -144,6 +144,8 @@ function getProductById(id) { return products.find((product) => product.id === i
 function getPatternById(id) { return patterns.find((pattern) => pattern.id === id); }
 
 function renderHero() {
+  if (!products.length) return;
+  heroState.index = Math.min(heroState.index, products.length - 1);
   const heroProduct = products[heroState.index];
   const nextProduct = products[(heroState.index + 1) % products.length];
   const heroImage = document.querySelector('[data-hero-image]');
@@ -189,12 +191,71 @@ function renderHero() {
   if (nextButton) nextButton.onclick = () => { heroState.index = (heroState.index + 1) % products.length; renderHero(); };
 }
 
+function renderFeaturedHome() {
+  const featuredProducts = document.querySelector('[data-featured-products]');
+  const featuredPatterns = document.querySelector('[data-featured-patterns]');
+
+  if (featuredProducts) {
+    const items = products.slice(0, 3);
+    featuredProducts.innerHTML = items.length
+      ? items.map((product) => `
+        <article class="product-card">
+          <div class="media"><img src="${product.image}" alt="${product.name}"></div>
+          <div class="body">
+            <div class="meta"><span class="tag">${product.category}</span><span class="tag">${product.color}</span></div>
+            <h3>${product.name}</h3>
+            <p>${product.description}</p>
+            <div class="price-line"><strong>${formatPrice(product.price)}</strong><span style="color: var(--muted); text-decoration: line-through;">${formatPrice(product.originalPrice)}</span></div>
+            <div class="product-actions"><a class="btn-small primary" href="product.html?id=${product.id}">View</a><button class="btn-small" type="button" data-add-product="${product.id}">Add to cart</button></div>
+          </div>
+        </article>
+      `).join('')
+      : '<p class="description">Featured products will appear here once the studio catalog is loaded.</p>';
+  }
+
+  if (featuredPatterns) {
+    const items = patterns.slice(0, 3);
+    featuredPatterns.innerHTML = items.length
+      ? items.map((pattern) => `
+        <article class="pattern-card">
+          <div class="media"><img src="${pattern.image}" alt="${pattern.name}"></div>
+          <div class="body">
+            <div class="meta"><span class="tag">${pattern.skill}</span><span class="tag">${formatPrice(pattern.price)}</span></div>
+            <h3>${pattern.name}</h3>
+            <p>${pattern.description}</p>
+            <div class="product-actions"><a class="btn-small primary" href="pattern-detail.html?id=${pattern.id}">Preview</a><button class="btn-small" type="button" data-buy-pattern="${pattern.id}">Buy & download</button></div>
+          </div>
+        </article>
+      `).join('')
+      : '<p class="description">Signature patterns will appear here when they are available.</p>';
+  }
+
+  document.querySelectorAll('[data-add-product]').forEach((button) => {
+    button.onclick = () => {
+      addToCart(button.dataset.addProduct, 1, 'M');
+      button.textContent = 'Added';
+      setTimeout(() => { button.textContent = 'Add to cart'; }, 1000);
+    };
+  });
+
+  document.querySelectorAll('[data-buy-pattern]').forEach((button) => {
+    button.onclick = () => {
+      window.location.href = `pattern-detail.html?id=${button.dataset.buyPattern}`;
+    };
+  });
+}
+
 function renderProductGrid() {
   const grid = document.querySelector('[data-product-grid]');
   if (!grid) return;
   const filters = document.querySelectorAll('.filter-pill');
   const category = document.querySelector('[data-category-filter]')?.value || 'all';
   const sort = document.querySelector('[data-sort-filter]')?.value || 'featured';
+
+  if (!products.length) {
+    grid.innerHTML = '<p class="description">No products are available in the current collection.</p>';
+    return;
+  }
 
   let items = [...products];
   if (category !== 'all') items = items.filter((p) => p.category.toLowerCase() === category.toLowerCase());
@@ -247,6 +308,10 @@ function renderProductGrid() {
 function renderPatternGrid() {
   const grid = document.querySelector('[data-pattern-grid]');
   if (!grid) return;
+  if (!patterns.length) {
+    grid.innerHTML = '<p class="description">No patterns are available right now.</p>';
+    return;
+  }
   grid.innerHTML = patterns.map((pattern) => `
     <article class="pattern-card">
       <div class="media"><img src="${pattern.image}" alt="${pattern.name}"></div>
@@ -273,6 +338,10 @@ function renderPatternGrid() {
 function renderProductDetail() {
   const detail = document.querySelector('[data-product-detail]');
   if (!detail) return;
+  if (!products.length) {
+    detail.innerHTML = '<p class="description">This product is unavailable at the moment.</p>';
+    return;
+  }
   const params = new URLSearchParams(window.location.search);
   const product = getProductById(params.get('id') || products[0].id);
   if (!product) return;
@@ -336,6 +405,10 @@ function renderProductDetail() {
 function renderPatternDetail() {
   const detail = document.querySelector('[data-pattern-detail]');
   if (!detail) return;
+  if (!patterns.length) {
+    detail.innerHTML = '<p class="description">This pattern is not available right now.</p>';
+    return;
+  }
   const params = new URLSearchParams(window.location.search);
   const pattern = getPatternById(params.get('id') || patterns[0].id);
   if (!pattern) return;
@@ -563,6 +636,10 @@ function renderConfirmation() {
 function renderPortfolio() {
   const grid = document.querySelector('[data-portfolio-grid]');
   if (!grid) return;
+  if (!portfolio.length) {
+    grid.innerHTML = '<p class="description">The lookbook is being refreshed.</p>';
+    return;
+  }
   grid.innerHTML = portfolio.map((entry, idx) => `
     <article class="portfolio-card">
       <img src="${entry.image}" alt="${entry.title}" data-open-lightbox="${idx}">
@@ -589,6 +666,24 @@ function initBookingForm() {
   const now = new Date();
   const minDate = now.toISOString().split('T')[0];
   input.min = minDate;
+}
+
+function initMobileMenu() {
+  const toggle = document.querySelector('.mobile-menu-toggle');
+  const nav = document.querySelector('.nav-links');
+  if (!toggle || !nav) return;
+
+  toggle.addEventListener('click', () => {
+    const isOpen = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  nav.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => {
+      nav.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+  });
 }
 
 function handleForms() {
@@ -634,7 +729,9 @@ function buildAdminTable(selector, rows) {
 
 async function initPage() {
   await loadData();
+  initMobileMenu();
   updateCartBadge();
+  renderFeaturedHome();
   renderHero();
   renderProductGrid();
   renderPatternGrid();

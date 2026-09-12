@@ -11,6 +11,7 @@
     <header class="site-header">
       <div class="container navbar">
         <a href="index.html" class="brand">Maison Miro</a>
+        <button class="mobile-menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">☰</button>
         <nav class="nav-links" aria-label="Main navigation">
           <a href="index.html" class="nav-pill active">Home</a>
           <a href="shop.html" class="nav-pill">Tshirt</a>
@@ -91,32 +92,7 @@
           <h2>Featured collection</h2>
           <p>Built for unhurried mornings, polished evenings, and the wardrobe in-between.</p>
         </div>
-        <div class="container card-grid">
-          <article class="product-card">
-            <div class="media"><img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80" alt="The Atelier Line"></div>
-            <div class="body">
-              <div class="meta"><span class="tag">New</span><span class="tag">Soft structure</span></div>
-              <h3>The Atelier Line</h3>
-              <p>Sharp shirting, fluid knits, and elevated separates designed to layer beautifully.</p>
-            </div>
-          </article>
-          <article class="product-card">
-            <div class="media"><img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80" alt="Studio Essentials"></div>
-            <div class="body">
-              <div class="meta"><span class="tag">Trending</span><span class="tag">Tailored</span></div>
-              <h3>Studio Essentials</h3>
-              <p>Easy silhouettes cut for movement, comfort, and everyday confidence.</p>
-            </div>
-          </article>
-          <article class="product-card">
-            <div class="media"><img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80" alt="Evening Edit"></div>
-            <div class="body">
-              <div class="meta"><span class="tag">Limited</span><span class="tag">Evening</span></div>
-              <h3>Evening Edit</h3>
-              <p>Rich neutrals and modern textures that read confident from day to event.</p>
-            </div>
-          </article>
-        </div>
+        <div class="container card-grid" data-featured-products></div>
       </section>
 
       <section class="section section-alt">
@@ -124,32 +100,7 @@
           <h2>Signature patterns</h2>
           <a href="patterns.html">Browse all patterns →</a>
         </div>
-        <div class="container card-grid">
-          <article class="pattern-card">
-            <div class="media"><img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80" alt="Milan Ruffle Blouse"></div>
-            <div class="body">
-              <div class="meta"><span class="tag">Intermediate</span><span class="tag">$32</span></div>
-              <h3>Milan Ruffle Blouse</h3>
-              <p>Elegant volume and a sculpted neckline in an easy-to-follow PDF pattern.</p>
-            </div>
-          </article>
-          <article class="pattern-card">
-            <div class="media"><img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80" alt="Noir Wool Coat"></div>
-            <div class="body">
-              <div class="meta"><span class="tag">Advanced</span><span class="tag">$48</span></div>
-              <h3>Noir Wool Coat</h3>
-              <p>Tailored structure and a dramatic drape for a statement winter layer.</p>
-            </div>
-          </article>
-          <article class="pattern-card">
-            <div class="media"><img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=900&q=80" alt="Marais Slip Dress"></div>
-            <div class="body">
-              <div class="meta"><span class="tag">Beginner</span><span class="tag">$28</span></div>
-              <h3>Marais Slip Dress</h3>
-              <p>Minimal and fluid with a bias-cut finish that feels elevated and easy.</p>
-            </div>
-          </article>
-        </div>
+        <div class="container card-grid" data-featured-patterns></div>
       </section>
 
       <section class="section">
